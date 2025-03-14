@@ -33,10 +33,11 @@ public class CategoryController : Controller
         {
             _db.Categories.Add(obj);
             _db.SaveChanges();
+            TempData["success"] = "Category Added Successfully";
+            return RedirectToAction("Index");
         }
 
-        TempData["success"] = "Category Added Successfully";
-        return RedirectToAction("Index");
+        return View(obj);
     }
 
     public string GetAllCategories()
@@ -74,9 +75,9 @@ public class CategoryController : Controller
         {
             _db.Categories.Update(obj);
             _db.SaveChanges();
+            return RedirectToAction("Index");
         }
-
-        return View();
+        return View(obj);
     }
     
     public IActionResult Delete(int id)
