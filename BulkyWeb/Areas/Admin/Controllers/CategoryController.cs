@@ -1,21 +1,23 @@
 using BulkyWeb.Data;
 using BulkyWeb.Models;
 using Microsoft.AspNetCore.Mvc;
+using SD7501Bulky.DataAccess.Repository;
 
 namespace BulkyWeb.Controllers;
 
+[Area("Admin")]
 public class CategoryController : Controller
 {
-    private readonly ApplicationDbContext _db;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public CategoryController(ApplicationDbContext db)
+    public CategoryController(IUnitOfWork unitOfWork)
     {
-        _db = db;
+        _unitOfWork = unitOfWork;
     }
 
     public IActionResult Index()
     {
-        List<Category> objCategoryList = _db.Categories.ToList();
+        List<Category> objCategoryList = _unitOfWork.CategoryRepository.GetAll().ToList();
         return View(objCategoryList);
     }
 
@@ -31,8 +33,8 @@ public class CategoryController : Controller
             ModelState.AddModelError("Name", "Name cannot be the same as Display Order");
         if (ModelState.IsValid)
         {
-            _db.Categories.Add(obj);
-            _db.SaveChanges();
+            _unitOfWork.CategoryRepository.Add(obj);
+            _unitOfWork.Save();
             TempData["success"] = "Category Added Successfully";
             return RedirectToAction("Index");
         }
@@ -57,7 +59,7 @@ public class CategoryController : Controller
             return NotFound();
         }
         
-        Category categoryFromDb = _db.Categories.Find(id);
+        Category categoryFromDb = _unitOfWork.CategoryRepository.Get(u => u.Id == id);
         if (categoryFromDb == null)
         {
             return NotFound();
@@ -73,8 +75,8 @@ public class CategoryController : Controller
             ModelState.AddModelError("Name", "Name cannot be the same as Display Order");
         if (ModelState.IsValid)
         {
-            _db.Categories.Update(obj);
-            _db.SaveChanges();
+            _unitOfWork.CategoryRepository.Update(obj);
+            _unitOfWork.Save();
             return RedirectToAction("Index");
         }
         return View(obj);
@@ -87,7 +89,7 @@ public class CategoryController : Controller
             return NotFound();
         }
         
-        Category categoryFromDb = _db.Categories.Find(id);
+        Category categoryFromDb = _unitOfWork.CategoryRepository.Get(u=>u.Id == id);
         if (categoryFromDb == null)
         {
             return NotFound();
@@ -99,13 +101,13 @@ public class CategoryController : Controller
     [HttpPost,ActionName("Delete")]
     public IActionResult Delete(int? id)
     {
-        Category? obj = _db.Categories.Find(id);
+        Category? obj = _unitOfWork.CategoryRepository.Get(u => u.Id == id);
         if (obj == null)
         {
             return NotFound();
         }
-        _db.Categories.Remove(obj);
-        _db.SaveChanges();
+        _unitOfWork.CategoryRepository.Remove(obj);
+        _unitOfWork.Save();
         return RedirectToAction("Index");
     }
 }
